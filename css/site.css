@@ -1,0 +1,95 @@
+.dc-chart g.row text {
+    fill: black;
+    font-size:0.8em;
+}
+
+.dc-chart .pie-slice {
+    fill:black;
+}
+
+.x-axis-label{
+    font-size:0.8em;
+}
+
+.dc-chart g.selected path {
+    stroke-width:1px !important;
+}
+
+#hdx-ipc-where {
+    height:400px;
+    width:100%;
+}
+
+.rc-3w-viz{
+    width:100%;
+}
+
+#wheretitle{
+    padding-bottom:12px;
+}
+
+#header{
+    padding-bottom:20px;
+    border-bottom-color: #dddddd;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    margin-bottom:20px;
+}
+
+.container{
+    padding-bottom:20px;
+}
+
+#reset{
+    background-color:#7F1416;
+    border-color:#7F1416;
+    width:60px;
+}
+
+.colheight{
+    height:550px;
+}
+
+.hdx-3w-info{
+    padding:5px;
+    background-color:white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    color:#7F1416;
+    font-size:2em;
+ }
+
+ .margintop20{
+    margin-top:20px;
+ }
+
+ .heightfixed{
+    height:300px;
+ }
+
+ #logo{
+    padding-left:20px;
+    margin-top:20px;
+    height:50px;
+    background-image: url('../images/Logo-Shelter-Cluster-Philippines-400.jpg');
+    background-size: auto 100%;
+    background-repeat: no-repeat;
+    background-position: right;
+ }
+
+ #count-info{
+    text-align:right;
+ }
+
+ #loading{
+    text-align:center;
+ }
+
+ .indicators {
+    font-size:1.25em;
+ }
+
+ #hdx-ipc-status {
+    margin-top:20px;
+ }

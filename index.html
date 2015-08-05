@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Shelter Cluster Dashboard</title>
+        <title>IPC Training Data Dashboard</title>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" ype="text/css" href="css/bootstrap.min.css"/>
@@ -36,16 +36,19 @@
         <div class="container">
                 <div class="row">
                     <div class="col-sm-8">  
-                        <h2 id="title"></h2>
+                        <h2 id="title">IPC Training Cluster Activity Dashboard</h2>
                     </div>                                         
                 </div>
                 <div id="header" class="row margintop20">
                     <div class="col-sm-8">  
-                        <p id="description"></p>
+                        <p id="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
                     </div>                            
                     <div class="col-sm-1">
-                        <a class="reset btn btn-primary btn-sm" id="reset" href="javascript:dc.filterAll();dc.redrawAll();">Reset</a>
-                    </div>                                      
+                        <a class="reset btn btn-primary" id="reset" href="javascript:dc.filterAll();dc.redrawAll();">Clear Filters</a>
+                    </div>
+                    <div class="col-sm-1">
+                        <a id="reinit" class="btn btn-primary">Reset Dashboard</a>
+                    </div>                                                             
                 </div>
                 <div class="row">
                     <div class="col-sm-8">
@@ -53,27 +56,31 @@
                         <div class="rc-3w-viz" id="hdx-ipc-where"></div>                            
                     </div>
                     <div id="count-info" class="col-sm-4">
-                        <div class="indicators"><h4>Untrained Centres:</h4> <span id="hdx-ipc-untrained"></span></div>
-                        <div class="indicators"> <h4>Trained Centres:</h4> <span class="total-count"></span> filtered to <span class="filter-count "></span></div>
-                        <div id="hdx-ipc-status" class="rc-3w-viz"></div>                                
+                        <div class="row">
+                            <div class="col-md-12" id="area_title"><h3>Guinea</h3></div>
+                        </div>
+                        <div class="row">
+                            <div class="indicators col-md-6"><h4>Total Centres:</h4> <span id="hdx-ipc-untrained"></span></div>
+                            <div class="indicators col-md-6"> <h4>Trained Centres:</h4> <span class="total-count"></span> filtered to <span class="filter-count "></span></div>
+                            <div class="rc-3w-viz" id="hdx-ipc-wherebar"></div> 
+                        </div>    
+                                                        
                     </div>                                         
                 </div>                             
-                <div class="row margintop20 heightfixed">                                          
-                    <div class="col-sm-4">
+                <div class="row margintop20 heightfixed"> 
+                    <div class="col-sm-3">
+                        <div id="hdx-ipc-status" class="rc-3w-viz"></div>                                
+                    </div>                                                          
+                    <div class="col-sm-3">
                         <div id="hdx-ipc-who" class="rc-3w-viz"></div>                                
                     </div>                                                 
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                         <div class="rc-3w-viz" id="hdx-ipc-type"></div>                              
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-3">
                         <div class="rc-3w-viz" id="hdx-ipc-duration"></div>                            
                     </div>                                                         
-                </div> 
-                <div class="row margintop20 heightfixed">                                          
-                    <div class="col-sm-12">
-                        <div id="hdx-ipc-date" class="rc-3w-viz"></div>                                
-                    </div>                                                                                                    
-                </div>                               
+                </div>                             
         </div>
         <div id="modal" class="modal fade" role="dialog">
             <div class="modal-dialog modal-sm">

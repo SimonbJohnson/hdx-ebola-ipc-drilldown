@@ -43,7 +43,6 @@
 #reset{
     background-color:#7F1416;
     border-color:#7F1416;
-    width:60px;
 }
 
 .colheight{
@@ -78,18 +77,10 @@
     background-position: right;
  }
 
- #count-info{
-    text-align:right;
- }
-
  #loading{
     text-align:center;
  }
 
  .indicators {
     font-size:1.25em;
- }
-
- #hdx-ipc-status {
-    margin-top:20px;
  }

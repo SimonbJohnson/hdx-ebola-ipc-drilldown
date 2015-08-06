@@ -162,8 +162,8 @@ function generate3WComponent(data,geom,map,key){
             .group(all);
 
     whereBarChart.width($('#hdx-ipc-wherebar').width()).height(300)
-            .dimension(where2Dimension)
-            .group(where2Group)
+            .dimension(whereDimension)
+            .group(whereGroup)
             .elasticX(true)
             .colors([color])
             .colorAccessor(function(d, i){return 0;})
@@ -173,6 +173,14 @@ function generate3WComponent(data,geom,map,key){
                 } else {
                     return lookupSmall[d.key] +' ('+d.value+')';
                 }
+            })
+            .on('filtered',function(chart,filter){
+                if(newFilter == true){
+                    newFilter = false;
+                    whereChart.filter(filter);
+                } else {
+                    newFilter = true;
+                }                
             })
             .xAxis().ticks(5);        
 
@@ -207,8 +215,14 @@ function generate3WComponent(data,geom,map,key){
             .createLeaflet(function(){
                 return map;
             })
-            .on('filtered',function(chart){
+            .on('filtered',function(chart,filter){
                 var filters = chart.filters();
+                if(newFilter == true){
+                    newFilter = false;
+                    whereBarChart.filter(filter);
+                } else {
+                    newFilter = true;
+                }     
                 if(filters.length>0){
                     if(admlevel<3){
                         var cf = crossfilter(data);
@@ -353,8 +367,6 @@ function stripIfNull(input){
 }
 
 function updateUntrained(filter){
-
-
     if(filter.length ==6){
         var dimension = cfuntrained.dimension(function(d){ return d['#adm1+code'] });
         dimension.filter(filter);
@@ -393,6 +405,8 @@ var adm2_geom = topojson.feature(gui_adm2,gui_adm2.objects.gui_adm2);
 var adm3_geom = topojson.feature(gui_adm3,gui_adm3.objects.gui_adm3);
 var lookup = {};
 var lookupSmall = {};
+var newFilter = true;
+
 genLookupToName();
 $('#reinit').click(function(){
         map.removeLayer(dcGeoLayer);

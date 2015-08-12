@@ -15,8 +15,6 @@
         <script src="js/dc.leaflet.js"></script>
         <script src="js/topojson.v1.min.js"></script>
         <script src="js/bootstrap.min.js"></script>
-        <script src="data/data.js"></script>
-        <script src="data/data2.js"></script>
         <script src="data/gui_adm1.js"></script>
         <script src="data/gui_adm2.js"></script>
         <script src="data/gui_adm3.js"></script>
@@ -43,14 +41,19 @@
                     <div class="col-sm-8">  
                         <p id="description">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
                     </div>                            
-                    <div class="col-sm-1">
+                    <div class="col-sm-2">
                         <a class="reset btn btn-primary" id="reset" href="javascript:dc.filterAll();dc.redrawAll();">Clear Filters</a>
                     </div>
-                    <div class="col-sm-1">
+                    <div class="col-sm-2">
                         <a id="reinit" class="btn btn-primary">Reset Dashboard</a>
                     </div>                                                             
                 </div>
-                <div class="row">
+                <div class="row loading">
+                    <div class="col-sm-12">
+                        <h2>Loading</h2>
+                    </div>
+                </div>
+                <div class="row dash">
                     <div class="col-sm-8">
                         <p>Map | Current filter: <span id="mapfilter"></span></span></p>
                         <div class="rc-3w-viz" id="hdx-ipc-where"></div>                            
@@ -61,13 +64,13 @@
                         </div>
                         <div class="row">
                             <div class="indicators col-md-6"><h4>Total Centres:</h4> <span id="hdx-ipc-untrained"></span></div>
-                            <div class="indicators col-md-6"> <h4>Trained Centres:</h4> <span class="total-count"></span> filtered to <span class="filter-count "></span></div>
+                            <div class="indicators col-md-6"> <h4>Trainings:</h4> <span class="total-count"></span> filtered to <span class="filter-count "></span></div>
                             <div class="rc-3w-viz" id="hdx-ipc-wherebar"></div> 
                         </div>    
                                                         
                     </div>                                         
                 </div>                             
-                <div class="row margintop20 heightfixed"> 
+                <div class="row margintop20 heightfixed dash"> 
                     <div class="col-sm-3">
                         <div id="hdx-ipc-status" class="rc-3w-viz"></div>                                
                     </div>                                                          

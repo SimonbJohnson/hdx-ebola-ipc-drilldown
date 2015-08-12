@@ -40,11 +40,6 @@
     padding-bottom:20px;
 }
 
-#reset{
-    background-color:#7F1416;
-    border-color:#7F1416;
-}
-
 .colheight{
     height:550px;
 }
@@ -55,7 +50,7 @@
     background: rgba(255,255,255,0.8);
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
     border-radius: 5px;
-    color:#7F1416;
+    color:steelblue;
     font-size:2em;
  }
 

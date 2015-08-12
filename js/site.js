@@ -1,5 +1,4 @@
 function initDash(){
-
     updateUntrained('');
 
     map = L.map('hdx-ipc-where',{});
@@ -9,6 +8,7 @@ function initDash(){
     }).addTo(map);
     
     map.scrollWheelZoom.disable();
+
     generate3WComponent(data,adm1_geom,map,'#adm1+code');
 
 }
@@ -390,7 +390,9 @@ function updateUntrained(filter){
 }
 
 //load 3W data
-var cfuntrained = crossfilter(data2);
+$('.dash').hide();
+
+
 
 var map;
 var dcGeoLayer = '';
@@ -398,7 +400,10 @@ var geoLayer = '';
 var overlay1 = '';
 var overlay2 = '';
 var admlevel=1;
+var data;
+var data2;
 var color = 'steelblue';
+var cfuntrained
 
 var adm1_geom = topojson.feature(gui_adm1,gui_adm1.objects.gui_adm1);
 var adm2_geom = topojson.feature(gui_adm2,gui_adm2.objects.gui_adm2);
@@ -408,10 +413,43 @@ var lookupSmall = {};
 var newFilter = true;
 
 genLookupToName();
-$('#reinit').click(function(){
-        map.removeLayer(dcGeoLayer);
-        map.removeLayer(overlay1);
-        admlevel=1; 
-        generate3WComponent(data,adm1_geom,map,'#adm1+code');
-    });
-initDash();
+
+
+
+
+var data1url = 'http://proxy.hxlstandard.org/data.json?filter_count=7&url=https%3A//docs.google.com/spreadsheets/d/1NfbnTHjBPxzvxssMSUpP-cPG0mIoa2rAM5VohJuTbpg/pub%3Fgid%3D0%26single%3Dtrue%26output%3Dcsv&strip-headers=on&format=html&filter01=&filter02=&filter03=&filter04=&filter05=&filter06=&filter07=';
+
+var data1Call = $.ajax({ 
+    type: 'GET', 
+    url: data1url, 
+    dataType: 'json',
+    error:function(e,exception){
+        console.log(exception);
+    }
+});
+
+        //load geometry
+
+var data2url = 'http://proxy.hxlstandard.org/data.json?filter_count=7&url=https%3A//docs.google.com/spreadsheets/d/1NfbnTHjBPxzvxssMSUpP-cPG0mIoa2rAM5VohJuTbpg/pub%3Fgid%3D1500952633%26single%3Dtrue%26output%3Dcsv&strip-headers=on&format=html&filter01=&filter02=&filter03=&filter04=&filter05=&filter06=&filter07=';
+
+var data2Call = $.ajax({ 
+    type: 'GET', 
+    url: data2url, 
+    dataType: 'json',
+});
+
+$.when(data1Call, data2Call).then(function(data1Args, data2Args){
+    data = hxlProxyToJSON(data1Args[0]);
+    data2 = hxlProxyToJSON(data2Args[0]);
+    cfuntrained = crossfilter(data2);
+    $('#reinit').click(function(){
+            map.removeLayer(dcGeoLayer);
+            map.removeLayer(overlay1);
+            admlevel=1; 
+            generate3WComponent(data,adm1_geom,map,'#adm1+code');
+        });
+
+    $('.loading').hide();
+    $('.dash').show();
+    initDash();            
+});                 

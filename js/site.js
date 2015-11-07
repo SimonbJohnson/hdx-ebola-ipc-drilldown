@@ -418,7 +418,7 @@ genLookupToName();
 
 
 
-var data1url = 'http://proxy.hxlstandard.org/data.json?filter_count=7&url=https%3A//www.dropbox.com/s/otsi1lqdz66jy3w/ipc-merged.csv%3Fdl%3D1&strip-headers=on&format=html&filter01=&filter02=&filter03=&filter04=&filter05=&filter06=&filter07=&force=1';
+var data1url = 'https://proxy.hxlstandard.org/data.json?filter_count=7&url=https%3A//www.dropbox.com/s/otsi1lqdz66jy3w/ipc-merged.csv%3Fdl%3D1&strip-headers=on&format=html&filter01=&filter02=&filter03=&filter04=&filter05=&filter06=&filter07=&force=1';
 
 var data1Call = $.ajax({ 
     type: 'GET', 
@@ -431,7 +431,7 @@ var data1Call = $.ajax({
 
         //load geometry
 
-var data2url = 'http://proxy.hxlstandard.org/data.json?filter_count=7&url=https%3A//www.dropbox.com/s/ko1bxl8z69ptxny/ipc-facility-coverage-adm3.csv%3Fdl%3D1&strip-headers=on&format=html&filter01=count&count-tags01=adm1%2Bcode%2Cadm2%2Bcode%2Cadm3%2Bcode&count-aggregate-tag01=inneed&filter02=&filter03=&filter04=&filter05=&filter06=&filter07=&force=1';
+var data2url = 'https://proxy.hxlstandard.org/data.json?filter_count=7&url=https%3A//www.dropbox.com/s/ko1bxl8z69ptxny/ipc-facility-coverage-adm3.csv%3Fdl%3D1&strip-headers=on&format=html&filter01=count&count-tags01=adm1%2Bcode%2Cadm2%2Bcode%2Cadm3%2Bcode&count-aggregate-tag01=inneed&filter02=&filter03=&filter04=&filter05=&filter06=&filter07=&force=1';
 
 var data2Call = $.ajax({ 
     type: 'GET', 

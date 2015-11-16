@@ -35,6 +35,7 @@ function readHash(hash) {
     setGeometry(state.adm1, state.adm2);
 }
 
+
 /**
  * Write state to the hash.
  * @param the state as an associative array.
@@ -98,9 +99,11 @@ function onEachFeatureADM1(feature,layer){
 }
 
 /**
- * Set up a chart.
+ * Set up a row bar chart.
  * @param id the chart element ID in HTML
  * @param tag the HXL tag to use in the data
+ * @param cf the cross-filter object
+ * @param nameMap (optional) a lookup map for display names
  * @return a D3 chart object
  */
 function makeRowChart(id, tag, cf, nameMap) {
@@ -130,6 +133,16 @@ function makeRowChart(id, tag, cf, nameMap) {
     return chart;
 }
 
+
+/**
+ * Make a chropleth map chart.
+ * @param id the chart element ID in HTML
+ * @param tag the HXL tag to use in the data
+ * @param cf the cross-filter object
+ * @param geom the GeoJSON geometry
+ * @param barchart the corresponding D3 non-map chart object
+ * @return a D3 chart object
+ */
 function makeChoroplethChart(id, tag, cf, geom, barchart) {
     var chart = dc.leafletChoroplethChart(id);
     var dimension = cf.dimension(function(d){ if(d[tag]==null){

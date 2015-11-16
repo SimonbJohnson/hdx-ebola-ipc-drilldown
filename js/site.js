@@ -41,10 +41,17 @@ function readHash(hash) {
  * @param the state as an associative array.
  */
 function writeHash(state) {
-    hash = '#';
-    $(state).each(function(value, key) {
-        hash += key + '=' + value;
-    });
+    hash = '';
+    for (var key in state) {
+        if (state[key]) {
+            hash += key + '=' + state[key];
+        }
+    }
+    if (hash) {
+        location.hash = hash;
+    } else {
+        location.hash = '';
+    }
 }
 
 /**
@@ -135,7 +142,7 @@ function makeRowChart(id, tag, cf, nameMap) {
 
 
 /**
- * Make a chropleth map chart.
+ * Make a choropleth map chart.
  * @param id the chart element ID in HTML
  * @param tag the HXL tag to use in the data
  * @param cf the cross-filter object
@@ -183,6 +190,8 @@ function makeChoroplethChart(id, tag, cf, geom, barchart) {
             return map;
         })
         .on('filtered',function(chart,filter){
+            // This is where we select on the map
+            // filter = the ADM code
             var filters = chart.filters();
             if(newFilter == true){
                 newFilter = false;
@@ -195,7 +204,8 @@ function makeChoroplethChart(id, tag, cf, geom, barchart) {
                     var cf = crossfilter(data);
                     map.removeLayer(dcGeoLayer);                    
                 }               
-                if(admlevel==1){      
+                if(admlevel==1){
+                    writeHash({adm1: filter});
                     var overlay = L.geoJson(geom,{
                         style:{
                             fillColor: "#000000",
@@ -215,22 +225,9 @@ function makeChoroplethChart(id, tag, cf, geom, barchart) {
                     admlevel=2;
                     generate3WComponent(newData,newGeom,map,'#adm2+code');
                 } else if(admlevel==2){
-                    /*var overlay = L.geoJson(geom,{
-                      style:{
-                      fillColor: "#000000",
-                      color: 'grey',
-                      weight: 2,
-                      opacity: 1,
-                      fillOpacity: 0,
-                      class:'adm'+admlevel
-                      },
-                      onEachFeature: onEachFeatureADM2
-                      }); */                   
                     var whereDimension = cf.dimension(function(d,i){return d['#adm2+code']; });
                     var newData = whereDimension.filter(filters[0]).top(Infinity);
                     var newGeom = filterGeom(adm3_geom,filters[0],9);
-                    /*overlay.addTo(map); 
-                      overlay2 = overlay;*/
                     admlevel=3;
                     generate3WComponent(newData,newGeom,map,'#adm3+code');
                 }
@@ -239,6 +236,13 @@ function makeChoroplethChart(id, tag, cf, geom, barchart) {
 
     return chart;
 }
+
+function clearFilters() {
+    dc.filterAll();
+    dc.redrawAll();
+}
+
+
 
 
 /**
@@ -426,11 +430,12 @@ $.when(data1Call, data2Call).then(function(data1Args, data2Args){
     data2 = hxlProxyToJSON(data2Args[0]);
     cfuntrained = crossfilter(data2);
     $('#reinit').click(function(){
-            map.removeLayer(dcGeoLayer);
-            map.removeLayer(overlay1);
-            admlevel=1; 
-            generate3WComponent(data,adm1_geom,map,'#adm1+code');
-        });
+        map.removeLayer(dcGeoLayer);
+        map.removeLayer(overlay1);
+        admlevel=1; 
+        generate3WComponent(data,adm1_geom,map,'#adm1+code');
+        writeHash({});
+    });
 
     $('.loading').hide();
     $('.dash').show();

@@ -76,7 +76,7 @@ function setGeometry(adm1_code, adm2_code) {
         admlevel=2;
         generate3WComponent(newData,newGeom,map,'#adm2+code');            
     } else {
-        // what do we do when they're both selected?
+        // FIXME what do we do when they're both selected?
         console.log("setGeometry: both selected");
     }
 
@@ -225,6 +225,7 @@ function makeChoroplethChart(id, tag, cf, geom, barchart) {
                     admlevel=2;
                     generate3WComponent(newData,newGeom,map,'#adm2+code');
                 } else if(admlevel==2){
+                    writeHash({adm2: filter});
                     var whereDimension = cf.dimension(function(d,i){return d['#adm2+code']; });
                     var newData = whereDimension.filter(filters[0]).top(Infinity);
                     var newGeom = filterGeom(adm3_geom,filters[0],9);

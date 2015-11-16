@@ -9,20 +9,64 @@ function initDash(){
     
     map.scrollWheelZoom.disable();
 
-    generate3WComponent(data,adm1_geom,map,'#adm1+code');
+    window.addEventListener('hashchange', function(e) { readHash(window.location.hash); }, false);
+    readHash(window.location.hash);
+}
 
+/**
+ * Read state from the hash.
+ */
+function readHash(hash) {
+    var state = {};
+    var e,
+        a = /\+/g,  // Regex for replacing addition symbol with a space
+        r = /([^&;=]+)=?([^&;]*)/g,
+        d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
+        q = hash.substring(1);
+
+    while (e = r.exec(q))
+       state[d(e[1])] = d(e[2]);
+
+    console.log(state);
+    setGeometry(state.adm1, state.adm2);
+}
+
+/**
+ * Write state to the hash.
+ */
+function writeHash(state) {
+    hash = '#';
+    $(state).each(function(value, key) {
+        hash += key + '=' + value;
+    });
+}
+
+/**
+ * Select the current geometry
+ */
+function setGeometry(adm1_code, adm2_code) {
+    console.log(adm1_code, adm2_code);
+    if (adm1_code == null) {
+        generate3WComponent(data,adm1_geom,map,'#adm1+code');
+    } else if (adm2_code == null) {
+        var cf = crossfilter(data);           
+        map.removeLayer(dcGeoLayer);
+        map.removeLayer(overlay2);
+        var whereDimension = cf.dimension(function(d,i){return d['#adm1+code']; });
+        var newData = whereDimension.filter(adm1_code).top(Infinity);
+        var newGeom = filterGeom(adm2_geom,adm1_code,6);
+        admlevel=2;
+        generate3WComponent(newData,newGeom,map,'#adm2+code');            
+    }
+    writeHash({
+        adm1: adm1_code,
+        adm2: adm2_code
+    });
 }
 
 function onEachFeatureADM1(feature,layer){
     layer.on('click',function(e){
-            var cf = crossfilter(data);           
-            map.removeLayer(dcGeoLayer);
-            map.removeLayer(overlay2);
-            var whereDimension = cf.dimension(function(d,i){return d['#adm1+code']; });
-            var newData = whereDimension.filter(e.target.feature.properties.CODE).top(Infinity);
-            var newGeom = filterGeom(adm2_geom,e.target.feature.properties.CODE,6);
-            admlevel=2;
-            generate3WComponent(newData,newGeom,map,'#adm2+code');            
+        setGeometry(e.target.feature.properties.CODE);
     });
     layer.on('mouseover',function(){
         $('.hdx-3w-info').html('Click to view '+lookup[feature.properties.CODE]);

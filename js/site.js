@@ -1,3 +1,6 @@
+/**
+ * Set up the dashboard after downloading the data.
+ */
 function initDash(){
     updateUntrained('');
 
@@ -9,12 +12,14 @@ function initDash(){
     
     map.scrollWheelZoom.disable();
 
-    window.addEventListener('hashchange', function(e) { readHash(window.location.hash); }, false);
+    // restore state from the current URL hash
     readHash(window.location.hash);
 }
 
+
 /**
- * Read state from the hash.
+ * Read and restore state from the URL hash.
+ * @param the hash as a string, including leading "#"
  */
 function readHash(hash) {
     var state = {};
@@ -33,6 +38,7 @@ function readHash(hash) {
 
 /**
  * Write state to the hash.
+ * @param the state as an associative array.
  */
 function writeHash(state) {
     hash = '#';
@@ -42,13 +48,18 @@ function writeHash(state) {
 }
 
 /**
- * Select the current geometry
+ * Select and display a specific area
+ * @param adm1_code (optional) the ADM1 to display.
+ * @param adm2_code (optional) the ADM2 to display.
  */
 function setGeometry(adm1_code, adm2_code) {
-    console.log(adm1_code, adm2_code);
+    
     if (adm1_code == null) {
+        // no admin codes selected
         generate3WComponent(data,adm1_geom,map,'#adm1+code');
+        zoomToGeom(adm1_geom);
     } else if (adm2_code == null) {
+        // only ADM1 code selected
         var cf = crossfilter(data);           
         map.removeLayer(dcGeoLayer);
         map.removeLayer(overlay2);
@@ -57,13 +68,24 @@ function setGeometry(adm1_code, adm2_code) {
         var newGeom = filterGeom(adm2_geom,adm1_code,6);
         admlevel=2;
         generate3WComponent(newData,newGeom,map,'#adm2+code');            
+    } else {
+        // what do we do when they're both selected?
+        console.log("setGeometry: both selected");
     }
+
+    // Update the URL hash with the current location
     writeHash({
         adm1: adm1_code,
         adm2: adm2_code
     });
 }
 
+
+/**
+ * Set up callbacks for a Leaflet feature layer.
+ * @param feature the GeoJSON feature object
+ * @param layer the Leaflet layer
+ */
 function onEachFeatureADM1(feature,layer){
     layer.on('click',function(e){
         setGeometry(e.target.feature.properties.CODE);
@@ -74,132 +96,83 @@ function onEachFeatureADM1(feature,layer){
     layer.on('mouseout',function(){
         $('.hdx-3w-info').html('Hover for name');
     });
+}
 
+/**
+ * Set up a chart.
+ * @param id the chart element ID in HTML
+ * @param tag the HXL tag to use in the data
+ * @return a D3 chart object
+ */
+function makeChart(id, tag, cf) {
+    var chart = dc.rowChart(id);
+    var dimension = cf.dimension(function(d){ if(d[tag]==null){
+        return 'No Data';
+    } else {
+        return d[tag]; 
+    }});
+    var group = dimension.group();
+
+    chart.width($(id).width()).height(200)
+        .dimension(dimension)
+        .group(group)
+        .elasticX(true)
+        .colors([color])
+        .colorAccessor(function(d, i){return 0;})
+        .label(function(d){
+            return d.key +' ('+d.value+')';
+        })            
+        .xAxis().ticks(5);
+
+    return chart;
 }
-/*
-function onEachFeatureADM2(feature,layer){
-    layer.on('click',function(e){
-            var cf = crossfilter(data);  
-            map.removeLayer(dcGeoLayer);
-            var whereDimension = cf.dimension(function(d,i){return d['#adm2+code']; });
-            var newData = whereDimension.filter(e.target.feature.properties.CODE).top(Infinity);
-            var newGeom = filterGeom(adm3_geom,e.target.feature.properties.CODE,9);
-            admlevel=3;
-            generate3WComponent(newData,newGeom,map,'#adm3+code');                 
-    });
-    layer.on('mouseover',function(){
-        $('.hdx-3w-info').html('Click to view '+lookup[feature.properties.CODE]);
-    });
-    layer.on('mouseout',function(){
-        $('.hdx-3w-info').html('Hover for name');
-    });    
-}
+
+
+/**
+ * Generate the display map and charts.
+ * @param data the HXL data to display
+ * @param geom the current geometry
+ * @param map the Leaflet map
+ * @param key the HXL tag to select the next level
  */
 function generate3WComponent(data,geom,map,key){
 
+    // Clear the charts
     dc.chartRegistry.clear();
+
+    // Set up the label text for the charts
     $('#hdx-ipc-who').html('<p>Who | Current filter: <span class="filter"></span></span></p>');
     $('#hdx-ipc-status').html('<p>Status | Current filter: <span class="filter"></span></span></p>');
     $('#hdx-ipc-type').html('<p>Type | Current filter: <span class="filter"></span></span></p>');
     $('#hdx-ipc-duration').html('<p>Duration | Current filter: <span class="filter"></span></span></p>');
     $('.hdx-3w-info').remove();
 
-    //lookUpVDCCodeToName = genLookupVDCCodeToName(geom,config);
-
-    var whoChart = dc.rowChart('#hdx-ipc-who');
-    var statusChart = dc.rowChart('#hdx-ipc-status');
-    var typeChart = dc.rowChart('#hdx-ipc-type');
-    var durationChart = dc.rowChart('#hdx-ipc-duration');
-    //var dateChart = dc.lineChart('#hdx-ipc-date');
-    var whereChart = dc.leafletChoroplethChart('#hdx-ipc-where');
-    var whereBarChart = dc.rowChart('#hdx-ipc-wherebar');
-
+    // Join the two groups of data
     var cf = crossfilter(data);
 
-    var whoDimension = cf.dimension(function(d){ if(d['#org+code']==null){
-            return 'No Data';
-        } else {
-            return d['#org+code']; 
-        }});        
-    var statusDimension = cf.dimension(function(d){ if(d['#status+sector']==null){
-            return 'No Data';
-        } else {
-            return d['#status+sector']; 
-        }});
-    var typeDimension = cf.dimension(function(d){ if(d['#output+type']==null){
-            return 'No Data';
-        } else {
-            return d['#output+type']; 
-        }});
-    var durationDimension = cf.dimension(function(d){ if(d['#output+duration']==null){
-            return 'No Data';
-        } else {
-            return String(d['#output+duration']); 
-        }});
+    // Set up the charts
+    var whoChart = makeChart('#hdx-ipc-who', '#org+code', cf);
+    var statusChart = makeChart('#hdx-ipc-status', '#status+sector', cf);
+    var typeChart = makeChart('#hdx-ipc-type', '#output+type', cf);
+    var durationChart = makeChart('#hdx-ipc-duration', '#output+duration', cf);
+    var whereChart = dc.leafletChoroplethChart('#hdx-ipc-where');
+    var whereBarChart = dc.rowChart('#hdx-ipc-wherebar');
 
     var whereDimension = cf.dimension(function(d){ if(d[key]==null){
             return 'No Data';
         } else {
             return d[key]; 
         }});
-
     var where2Dimension = cf.dimension(function(d){ if(d[key]==null){
             return 'No Data';
         } else {
             return d[key]; 
         }});    
 
-    var whoGroup = whoDimension.group();
-    var statusGroup = statusDimension.group();
-    var typeGroup = typeDimension.group();
-    var durationGroup = durationDimension.group();
+    
     var whereGroup = whereDimension.group();
     var where2Group = where2Dimension.group();
     var all = cf.groupAll();
-
-    whoChart.width($('#hdx-ipc-who').width()).height(200)
-            .dimension(whoDimension)
-            .group(whoGroup)
-            .elasticX(true)
-            .colors([color])
-            .colorAccessor(function(d, i){return 0;})
-            .label(function(d){
-                return d.key +' ('+d.value+')';
-            })            
-            .xAxis().ticks(5);
-
-    statusChart.width($('#hdx-ipc-status').width()).height(200)
-            .dimension(statusDimension)
-            .group(statusGroup)
-            .elasticX(true)
-            .colors([color])
-            .colorAccessor(function(d, i){return 0;})
-            .label(function(d){
-                return d.key +' ('+d.value+')';
-            })
-            .xAxis().ticks(5);    
-    
-    typeChart.width($('#hdx-ipc-type').width()).height(200)
-            .dimension(typeDimension)
-            .group(typeGroup)
-            .elasticX(true)
-            .colors([color])
-            .colorAccessor(function(d, i){return 0;})
-            .label(function(d){
-                return d.key +' ('+d.value+')';
-            })
-            .xAxis().ticks(5); 
-
-    durationChart.width($('#hdx-ipc-duration').width()).height(200)
-            .dimension(durationDimension)
-            .group(durationGroup)
-            .elasticX(true)
-            .colors([color])
-            .colorAccessor(function(d, i){return 0;})
-            .label(function(d){
-                return d.key +' ('+d.value+')';
-            })
-            .xAxis().ticks(5);          
 
     dc.dataCount('#count-info')
             .dimension(cf)
@@ -313,39 +286,12 @@ function generate3WComponent(data,geom,map,key){
                     }
                 }
             });
-            /*.on("renderlet",(function(e){
-                var html = "";
-                e.filters().forEach(function(l){
-                    html += lookUpVDCCodeToName[l]+", ";
-                });
-                $('#mapfilter').html(html);
-            }));*/             
 
     dc.renderAll();
     
     zoomToGeom(geom);
 
     dcGeoLayer = whereChart.geojsonLayer(); 
-/*)
-    
-    var g = d3.selectAll('#rc-3W-who').select('svg').append('g');
-    
-    g.append('text')
-        .attr('class', 'x-axis-label')
-        .attr('text-anchor', 'middle')
-        .attr('x', $('#rc-3W-who').width()/2)
-        .attr('y', 398)
-        .text('Households Reached');
-
-    var g = d3.selectAll('#rc-3W-what').select('svg').append('g');
-    
-    g.append('text')
-        .attr('class', 'x-axis-label')
-        .attr('text-anchor', 'middle')
-        .attr('x', $('#rc-3W-what').width()/2)
-        .attr('y', 298)
-        .text('Households Reached');
-*/
 }
 
 function filterGeom(geom,filter,length){

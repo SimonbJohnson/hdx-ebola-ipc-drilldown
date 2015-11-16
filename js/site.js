@@ -104,12 +104,16 @@ function onEachFeatureADM1(feature,layer){
  * @param tag the HXL tag to use in the data
  * @return a D3 chart object
  */
-function makeChart(id, tag, cf) {
+function makeChart(id, tag, cf, nameMap) {
     var chart = dc.rowChart(id);
     var dimension = cf.dimension(function(d){ if(d[tag]==null){
         return 'No Data';
     } else {
-        return d[tag]; 
+        if (nameMap) {
+            return nameMap[d[tag]];
+        } else {
+            return d[tag];
+        }
     }});
     var group = dimension.group();
 
@@ -156,7 +160,7 @@ function generate3WComponent(data,geom,map,key){
     var typeChart = makeChart('#hdx-ipc-type', '#output+type', cf);
     var durationChart = makeChart('#hdx-ipc-duration', '#output+duration', cf);
     var whereChart = dc.leafletChoroplethChart('#hdx-ipc-where');
-    var whereBarChart = dc.rowChart('#hdx-ipc-wherebar');
+    var whereBarChart = makeChart('#hdx-ipc-wherebar', key, cf, lookupSmall);
 
     var whereDimension = cf.dimension(function(d){ if(d[key]==null){
             return 'No Data';
@@ -177,29 +181,6 @@ function generate3WComponent(data,geom,map,key){
     dc.dataCount('#count-info')
             .dimension(cf)
             .group(all);
-
-    whereBarChart.width($('#hdx-ipc-wherebar').width()).height(300)
-            .dimension(whereDimension)
-            .group(whereGroup)
-            .elasticX(true)
-            .colors([color])
-            .colorAccessor(function(d, i){return 0;})
-            .label(function(d){
-                if(d.key==''){
-                    return 'No Data ('+d.value+')';
-                } else {
-                    return lookupSmall[d.key] +' ('+d.value+')';
-                }
-            })
-            .on('filtered',function(chart,filter){
-                if(newFilter == true){
-                    newFilter = false;
-                    whereChart.filter(filter);
-                } else {
-                    newFilter = true;
-                }                
-            })
-            .xAxis().ticks(5);        
 
     whereChart.width($('#hdx-ipc-where').width()).height(300)
             .dimension(whereDimension)

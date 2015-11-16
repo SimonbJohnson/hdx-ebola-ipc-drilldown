@@ -32,7 +32,6 @@ function readHash(hash) {
     while (e = r.exec(q))
        state[d(e[1])] = d(e[2]);
 
-    console.log(state);
     setGeometry(state.adm1, state.adm2);
 }
 
@@ -104,7 +103,7 @@ function onEachFeatureADM1(feature,layer){
  * @param tag the HXL tag to use in the data
  * @return a D3 chart object
  */
-function makeChart(id, tag, cf, nameMap) {
+function makeRowChart(id, tag, cf, nameMap) {
     var chart = dc.rowChart(id);
     var dimension = cf.dimension(function(d){ if(d[tag]==null){
         return 'No Data';
@@ -127,6 +126,103 @@ function makeChart(id, tag, cf, nameMap) {
             return d.key +' ('+d.value+')';
         })            
         .xAxis().ticks(5);
+
+    return chart;
+}
+
+function makeChoroplethChart(id, tag, cf, geom, barchart) {
+    var chart = dc.leafletChoroplethChart(id);
+    var dimension = cf.dimension(function(d){ if(d[tag]==null){
+        return 'No Data';
+    } else {
+        return d[tag]; 
+    }});
+    var group = dimension.group();
+    chart.width($(id).width()).height(300)
+        .dimension(dimension)
+        .group(group)
+        .center([0,0])
+        .zoom(0)    
+        .geojson(geom)
+        .colors(['#dddddd','steelblue'])
+        .colorDomain([0, 1])
+        .colorAccessor(function (d) {
+            if(d>0){
+                return 1;
+            } else {
+                return 0;
+            }
+        })           
+        .featureKeyAccessor(function(feature){
+            return feature.properties['CODE'];
+        }).popup(function(feature){
+            return lookup[feature.properties['CODE']];
+        })
+        .renderPopup(true)
+        .featureOptions({
+            'fillColor': 'black',
+            'color': 'black',
+            'opacity':1,
+            'fillOpacity': 0,
+            'weight': 3
+        })
+        .createLeaflet(function(){
+            return map;
+        })
+        .on('filtered',function(chart,filter){
+            var filters = chart.filters();
+            if(newFilter == true){
+                newFilter = false;
+                barchart.filter(filter);
+            } else {
+                newFilter = true;
+            }     
+            if(filters.length>0){
+                if(admlevel<3){
+                    var cf = crossfilter(data);
+                    map.removeLayer(dcGeoLayer);                    
+                }               
+                if(admlevel==1){      
+                    var overlay = L.geoJson(geom,{
+                        style:{
+                            fillColor: "#000000",
+                            color: 'grey',
+                            weight: 2,
+                            opacity: 1,
+                            fillOpacity: 0,
+                            class:'adm'+admlevel
+                        },
+                        onEachFeature: onEachFeatureADM1
+                    });
+                    overlay.addTo(map);                      
+                    var whereDimension = cf.dimension(function(d,i){return d['#adm1+code']; });
+                    var newData = whereDimension.filter(filters[0]).top(Infinity);
+                    var newGeom = filterGeom(adm2_geom,filters[0],6);
+                    overlay1 = overlay;
+                    admlevel=2;
+                    generate3WComponent(newData,newGeom,map,'#adm2+code');
+                } else if(admlevel==2){
+                    /*var overlay = L.geoJson(geom,{
+                      style:{
+                      fillColor: "#000000",
+                      color: 'grey',
+                      weight: 2,
+                      opacity: 1,
+                      fillOpacity: 0,
+                      class:'adm'+admlevel
+                      },
+                      onEachFeature: onEachFeatureADM2
+                      }); */                   
+                    var whereDimension = cf.dimension(function(d,i){return d['#adm2+code']; });
+                    var newData = whereDimension.filter(filters[0]).top(Infinity);
+                    var newGeom = filterGeom(adm3_geom,filters[0],9);
+                    /*overlay.addTo(map); 
+                      overlay2 = overlay;*/
+                    admlevel=3;
+                    generate3WComponent(newData,newGeom,map,'#adm3+code');
+                }
+            }
+        });
 
     return chart;
 }
@@ -155,121 +251,23 @@ function generate3WComponent(data,geom,map,key){
     var cf = crossfilter(data);
 
     // Set up the charts
-    var whoChart = makeChart('#hdx-ipc-who', '#org+code', cf);
-    var statusChart = makeChart('#hdx-ipc-status', '#status+sector', cf);
-    var typeChart = makeChart('#hdx-ipc-type', '#output+type', cf);
-    var durationChart = makeChart('#hdx-ipc-duration', '#output+duration', cf);
-    var whereChart = dc.leafletChoroplethChart('#hdx-ipc-where');
-    var whereBarChart = makeChart('#hdx-ipc-wherebar', key, cf, lookupSmall);
+    var whoChart = makeRowChart('#hdx-ipc-who', '#org+code', cf);
+    var statusChart = makeRowChart('#hdx-ipc-status', '#status+sector', cf);
+    var typeChart = makeRowChart('#hdx-ipc-type', '#output+type', cf);
+    var durationChart = makeRowChart('#hdx-ipc-duration', '#output+duration', cf);
+    var whereBarChart = makeRowChart('#hdx-ipc-wherebar', key, cf, lookupSmall);
+    var whereChart = makeChoroplethChart('#hdx-ipc-where', key, cf, geom, whereBarChart);
 
-    var whereDimension = cf.dimension(function(d){ if(d[key]==null){
-            return 'No Data';
-        } else {
-            return d[key]; 
-        }});
-    var where2Dimension = cf.dimension(function(d){ if(d[key]==null){
-            return 'No Data';
-        } else {
-            return d[key]; 
-        }});    
-
-    
-    var whereGroup = whereDimension.group();
-    var where2Group = where2Dimension.group();
     var all = cf.groupAll();
 
     dc.dataCount('#count-info')
             .dimension(cf)
             .group(all);
 
-    whereChart.width($('#hdx-ipc-where').width()).height(300)
-            .dimension(whereDimension)
-            .group(whereGroup)
-            .center([0,0])
-            .zoom(0)    
-            .geojson(geom)
-            .colors(['#dddddd','steelblue'])
-            .colorDomain([0, 1])
-            .colorAccessor(function (d) {
-                if(d>0){
-                    return 1;
-                } else {
-                    return 0;
-                }
-            })           
-            .featureKeyAccessor(function(feature){
-                return feature.properties['CODE'];
-            }).popup(function(feature){
-                return lookup[feature.properties['CODE']];
-            })
-            .renderPopup(true)
-            .featureOptions({
-                'fillColor': 'black',
-                'color': 'black',
-                'opacity':1,
-                'fillOpacity': 0,
-                'weight': 3
-            })
-            .createLeaflet(function(){
-                return map;
-            })
-            .on('filtered',function(chart,filter){
-                var filters = chart.filters();
-                if(newFilter == true){
-                    newFilter = false;
-                    whereBarChart.filter(filter);
-                } else {
-                    newFilter = true;
-                }     
-                if(filters.length>0){
-                    if(admlevel<3){
-                        var cf = crossfilter(data);
-                        map.removeLayer(dcGeoLayer);                    
-                    }               
-                    if(admlevel==1){      
-                        var overlay = L.geoJson(geom,{
-                                style:{
-                                    fillColor: "#000000",
-                                    color: 'grey',
-                                    weight: 2,
-                                    opacity: 1,
-                                    fillOpacity: 0,
-                                    class:'adm'+admlevel
-                                },
-                                onEachFeature: onEachFeatureADM1
-                        });
-                        overlay.addTo(map);                      
-                        var whereDimension = cf.dimension(function(d,i){return d['#adm1+code']; });
-                        var newData = whereDimension.filter(filters[0]).top(Infinity);
-                        var newGeom = filterGeom(adm2_geom,filters[0],6);
-                        overlay1 = overlay;
-                        admlevel=2;
-                        generate3WComponent(newData,newGeom,map,'#adm2+code');
-                    } else if(admlevel==2){
-                        /*var overlay = L.geoJson(geom,{
-                                style:{
-                                    fillColor: "#000000",
-                                    color: 'grey',
-                                    weight: 2,
-                                    opacity: 1,
-                                    fillOpacity: 0,
-                                    class:'adm'+admlevel
-                                },
-                                onEachFeature: onEachFeatureADM2
-                        }); */                   
-                        var whereDimension = cf.dimension(function(d,i){return d['#adm2+code']; });
-                        var newData = whereDimension.filter(filters[0]).top(Infinity);
-                        var newGeom = filterGeom(adm3_geom,filters[0],9);
-                        /*overlay.addTo(map); 
-                        overlay2 = overlay;*/
-                        admlevel=3;
-                        generate3WComponent(newData,newGeom,map,'#adm3+code');
-                    }
-                }
-            });
-
+    // Render
     dc.renderAll();
-    
+
+    // Focus in on the geometry
     zoomToGeom(geom);
 
     dcGeoLayer = whereChart.geojsonLayer(); 

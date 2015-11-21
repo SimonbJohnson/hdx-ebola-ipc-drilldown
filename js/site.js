@@ -60,12 +60,11 @@ function writeHash(state) {
  * @param adm2_code (optional) the ADM2 to display.
  */
 function setGeometry(adm1_code, adm2_code) {
-    
-    if (adm1_code == null) {
-        // no admin codes selected
-        generate3WComponent(data,adm1_geom,map,'#adm1+code');
-        zoomToGeom(adm1_geom);
-    } else if (adm2_code == null) {
+
+    if (adm2_code) {
+        // FIXME
+        console.log("oops - what to do with an ADM2?");
+    } else if (adm1_code) {
         // only ADM1 code selected
         var cf = crossfilter(data);           
         map.removeLayer(dcGeoLayer);
@@ -76,8 +75,9 @@ function setGeometry(adm1_code, adm2_code) {
         admlevel=2;
         generate3WComponent(newData,newGeom,map,'#adm2+code');            
     } else {
-        // FIXME what do we do when they're both selected?
-        console.log("setGeometry: both selected");
+        // no admin codes selected
+        generate3WComponent(data,adm1_geom,map,'#adm1+code');
+        zoomToGeom(adm1_geom);
     }
 
     // Update the URL hash with the current location

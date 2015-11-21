@@ -66,12 +66,19 @@ function writeHash(state) {
  */
 function setGeometry(adm1_code, adm2_code) {
 
+    var cf = crossfilter(data);           
+
     if (adm2_code) {
         // FIXME
-        console.log("oops - what to do with an ADM2?");
+        map.removeLayer(dcGeoLayer);
+        map.removeLayer(overlay2);
+        var whereDimension = cf.dimension(function(d,i){return d['#adm2+code']; });
+        var newData = whereDimension.filter(adm2_code).top(Infinity);
+        var newGeom = filterGeom(adm3_geom,adm2_code,9);
+        admlevel=3;
+        generate3WComponent(newData,newGeom,map,'#adm3+code');
     } else if (adm1_code) {
         // only ADM1 code selected
-        var cf = crossfilter(data);           
         map.removeLayer(dcGeoLayer);
         map.removeLayer(overlay2);
         var whereDimension = cf.dimension(function(d,i){return d['#adm1+code']; });

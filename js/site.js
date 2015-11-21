@@ -37,7 +37,8 @@ function readHash(hash) {
     while (e = r.exec(q))
        state[d(e[1])] = d(e[2]);
 
-    setGeometry(state.adm1, state.adm2);
+    // Set the map display
+    setGeometry(state);
 }
 
 
@@ -61,29 +62,28 @@ function writeHash(state) {
 
 /**
  * Select and display a specific area
- * @param adm1_code (optional) the ADM1 to display.
- * @param adm2_code (optional) the ADM2 to display.
+ * @param state the state to restore (keys: adm1, adm2)
  */
-function setGeometry(adm1_code, adm2_code) {
+function setGeometry(state) {
 
     var cf = crossfilter(data);           
 
-    if (adm2_code) {
+    if (state.adm2) {
         // FIXME
         map.removeLayer(dcGeoLayer);
         map.removeLayer(overlay2);
         var whereDimension = cf.dimension(function(d,i){return d['#adm2+code']; });
-        var newData = whereDimension.filter(adm2_code).top(Infinity);
-        var newGeom = filterGeom(adm3_geom,adm2_code,9);
+        var newData = whereDimension.filter(state.adm2).top(Infinity);
+        var newGeom = filterGeom(adm3_geom,state.adm2,9);
         admlevel=3;
         generate3WComponent(newData,newGeom,map,'#adm3+code');
-    } else if (adm1_code) {
+    } else if (state.adm1) {
         // only ADM1 code selected
         map.removeLayer(dcGeoLayer);
-        map.removeLayer(overlay2);
+        map.removeLayer(overlay1);
         var whereDimension = cf.dimension(function(d,i){return d['#adm1+code']; });
-        var newData = whereDimension.filter(adm1_code).top(Infinity);
-        var newGeom = filterGeom(adm2_geom,adm1_code,6);
+        var newData = whereDimension.filter(state.adm1).top(Infinity);
+        var newGeom = filterGeom(adm2_geom,state.adm1,6);
         admlevel=2;
         generate3WComponent(newData,newGeom,map,'#adm2+code');            
     } else {
@@ -94,8 +94,8 @@ function setGeometry(adm1_code, adm2_code) {
 
     // Update the URL hash with the current location
     writeHash({
-        adm1: adm1_code,
-        adm2: adm2_code
+        adm1: state.adm1,
+        adm2: state.adm2
     });
 }
 
@@ -107,7 +107,7 @@ function setGeometry(adm1_code, adm2_code) {
  */
 function onEachFeatureADM1(feature,layer){
     layer.on('click',function(e){
-        setGeometry(e.target.feature.properties.CODE);
+        setGeometry({adm1: e.target.feature.properties.CODE});
     });
     layer.on('mouseover',function(){
         $('.hdx-3w-info').html('Click to view '+lookup[feature.properties.CODE]);
@@ -212,37 +212,10 @@ function makeChoroplethChart(id, tag, cf, geom, barchart) {
                 newFilter = true;
             }     
             if(filters.length>0){
-                if(admlevel<3){
-                    var cf = crossfilter(data);
-                    map.removeLayer(dcGeoLayer);                    
-                }               
                 if(admlevel==1){
-                    writeHash({adm1: filter});
-                    var overlay = L.geoJson(geom,{
-                        style:{
-                            fillColor: "#000000",
-                            color: 'grey',
-                            weight: 2,
-                            opacity: 1,
-                            fillOpacity: 0,
-                            class:'adm'+admlevel
-                        },
-                        onEachFeature: onEachFeatureADM1
-                    });
-                    overlay.addTo(map);                      
-                    var whereDimension = cf.dimension(function(d,i){return d['#adm1+code']; });
-                    var newData = whereDimension.filter(filters[0]).top(Infinity);
-                    var newGeom = filterGeom(adm2_geom,filters[0],6);
-                    overlay1 = overlay;
-                    admlevel=2;
-                    generate3WComponent(newData,newGeom,map,'#adm2+code');
+                    setGeometry({adm1: filter});
                 } else if(admlevel==2){
-                    writeHash({adm2: filter});
-                    var whereDimension = cf.dimension(function(d,i){return d['#adm2+code']; });
-                    var newData = whereDimension.filter(filters[0]).top(Infinity);
-                    var newGeom = filterGeom(adm3_geom,filters[0],9);
-                    admlevel=3;
-                    generate3WComponent(newData,newGeom,map,'#adm3+code');
+                    setGeometry({adm2: filter});
                 }
             }
         });

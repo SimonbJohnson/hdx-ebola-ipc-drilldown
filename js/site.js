@@ -14,6 +14,11 @@ function initDash(){
 
     // restore state from the current URL hash
     readHash(window.location.hash);
+
+    // make the back button work
+    window.onhashchange = function(event) {
+        readHash(window.location.hash);
+    };
 }
 
 
